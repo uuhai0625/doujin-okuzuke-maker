@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同人誌 奥付メーカー</title>
+<style>
+  :root {
+    --bg: #f5f3f7;
+    --panel: #ffffff;
+    --border: #e2ddea;
+    --text: #2e2a38;
+    --muted: #7d7689;
+    --accent: #4d3f8f;
+    --accent-dark: #362b6b;
+    --ok-bg: #ece8f7;
+    --warn-bg: #fff3cd;
+    --warn-text: #7a5b00;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  header {
+    background: linear-gradient(135deg, #5b4dac, #362b6b);
+    color: #fff;
+    padding: 32px 20px 26px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 1.6rem; }
+  header p { margin: 0; opacity: .92; font-size: .95rem; }
+  .disclaimer {
+    max-width: 780px; margin: 18px auto 0;
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.4);
+    border-radius: 8px; padding: 10px 14px; font-size: .82rem;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  section.card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px;
+  }
+  section.card h2 { margin: 0 0 4px; font-size: 1.05rem; }
+  section.card .desc { color: var(--muted); font-size: .85rem; margin: 0 0 14px; }
+  .free-badge { display: inline-block; font-size: .72rem; padding: 3px 10px; border-radius: 999px; background: var(--ok-bg); color: var(--accent-dark); font-weight: bold; margin-left: 6px; }
+
+  label.field { display: block; margin-bottom: 12px; }
+  label.field .lbl { font-size: .83rem; font-weight: bold; }
+  label.field input, label.field select, label.field textarea {
+    width: 100%; margin-top: 5px; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: .92rem; font-family: inherit; background: #fdfcff;
+  }
+  label.field textarea { resize: vertical; min-height: 46px; }
+  .row2 { display: flex; gap: 12px; }
+  .row2 > * { flex: 1; }
+  .row3 { display: flex; gap: 12px; }
+  .row3 > * { flex: 1; }
+
+  .genre-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .genre-tab { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: #fdfcff; cursor: pointer; font-size: .85rem; }
+  .genre-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .chk-list label { display: flex; align-items: flex-start; gap: 8px; font-size: .85rem; background: #fdfcff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+  .chk-list input { margin-top: 3px; }
+
+  .btn-secondary {
+    background: #fff; border: 1px solid var(--border); color: var(--text);
+    padding: 8px 14px; border-radius: 8px; font-size: .82rem; cursor: pointer;
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .preview-wrap { background: #ece7f2; border-radius: 10px; padding: 20px; display: flex; justify-content: center; overflow-x: auto; }
+  .out-sheet {
+    width: 105mm; min-height: 148mm; background: #fff; border: 1px solid #ccc;
+    padding: 16mm 12mm; box-shadow: 0 2px 6px rgba(0,0,0,.1); font-size: 11px;
+  }
+  .out-sheet .title { font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 14px; }
+  .out-sheet dl { font-size: 11px; }
+  .out-sheet dt { color: var(--muted); margin-top: 8px; }
+  .out-sheet dd { margin: 1px 0 0; font-weight: bold; }
+  .out-sheet .notice { margin-top: 16px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 9.5px; color: #555; white-space: pre-wrap; }
+
+  footer { max-width: 860px; margin: 0 auto; padding: 0 16px 40px; font-size: .76rem; color: var(--muted); }
+  footer .updated { font-weight: bold; }
+
+  @media print {
+    @page { size: A5; margin: 8mm; }
+    header, main, footer { display: none !important; }
+    #printArea .out-sheet { width: auto; min-height: 0; padding: 0; border: none; box-shadow: none; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>同人誌 奥付メーカー <span class="free-badge">完全無料</span></h1>
+  <p>タイトル・サークル名・発行日などを入力するだけで、同人誌の奥付ページを自動生成</p>
+  <div class="disclaimer">
+    ⚠️ 生成される内容は一般的な奥付の書式を参考にした簡易なものです。印刷所ごとの入稿規定(必須項目・表記ルール)は各社の案内を必ずご確認ください。法的な助言ではありません。
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>① ジャンルを選ぶ</h2>
+    <div class="genre-tabs" id="genreTabs">
+      <div class="genre-tab active" data-genre="original">オリジナル作品</div>
+      <div class="genre-tab" data-genre="derivative">二次創作作品</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>② 基本情報を入力</h2>
+    <div id="basicForm"></div>
+  </section>
+
+  <section class="card" id="derivativeSection" style="display:none;">
+    <h2>③ 二次創作の注意書き</h2>
+    <p class="desc">よく使われる定型文をチェックで挿入できます(文言は自由に編集可能です)。</p>
+    <div id="derivativeForm"></div>
+  </section>
+
+  <section class="card">
+    <h2>④ 生成AI使用の開示(任意)</h2>
+    <p class="desc">作画・執筆の一部に生成AIを使用した場合、開示するかどうかを選べます。</p>
+    <div id="aiForm"></div>
+  </section>
+
+  <section class="card">
+    <h2>⑤ プレビュー・印刷</h2>
+    <div class="preview-wrap" id="previewWrap"></div>
+    <div class="btn-row">
+      <button class="btn-secondary" id="printBtn">🖨️ 印刷 / PDF保存</button>
+      <button class="btn-secondary" id="saveBtn">このブラウザに保存</button>
+      <button class="btn-secondary" id="loadBtn">保存内容を読み込む</button>
+    </div>
+    <p class="desc" id="saveStatus" style="margin:8px 0 0;"></p>
+  </section>
+
+</main>
+
+<footer>
+  <p><span class="updated">最終更新: 2026年9月時点の一般的な同人誌奥付の書式・印刷所案内を参考に作成。</span></p>
+  <p>本ツールは完全にブラウザ内で動作し、入力した内容はどこにも送信されません。全てお使いの端末内のみに保存されます。無料でご自由にお使いください。</p>
+</footer>
+
+<div id="printArea"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  function esc(s) { return (s || "").toString().replace(/[<>&"']/g, function (c) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  function makeKeyboardClickable(el) {
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); }
+    });
+  }
+
+  var DERIVATIVE_PRESETS = [
+    ["unofficial", "本作品は非公式の二次創作作品であり、原作および原作関係者とは一切関係ありません。"],
+    ["norepost", "本作品の無断転載・無断複製・無断使用・転売を固く禁じます。"],
+    ["r18", "本作品には成人向け表現が含まれます。18歳未満の方の閲覧はご遠慮ください。"],
+    ["personal", "本作品は個人の趣味で制作したものであり、営利を目的としたものではありません。"]
+  ];
+
+  var data = {
+    genre: "original",
+    title: "", circleName: "", authorName: "", pubDate: "", edition: "初版",
+    printerName: "", contactType: "x", contactValue: "", eventName: "",
+    derivative: { originalWorkName: "", presets: {}, customNotice: "" },
+    aiUsed: false, aiDisclosureText: "本作品の一部制作工程において生成AIを使用しています。"
+  };
+
+  function field(labelText, inputHtml) {
+    return '<label class="field"><span class="lbl">' + labelText + '</span>' + inputHtml + '</label>';
+  }
+
+  function renderGenreTabs() {
+    Array.prototype.forEach.call(document.querySelectorAll(".genre-tab"), function (tab) {
+      if (!tab.dataset.kbBound) { makeKeyboardClickable(tab); tab.dataset.kbBound = "1"; }
+      var isActive = tab.dataset.genre === data.genre;
+      tab.classList.toggle("active", isActive);
+      tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      tab.onclick = function () {
+        data.genre = tab.dataset.genre;
+        renderGenreTabs();
+        document.getElementById("derivativeSection").style.display = data.genre === "derivative" ? "block" : "none";
+        renderPreview();
+      };
+    });
+  }
+
+  function renderBasicForm() {
+    var el = document.getElementById("basicForm");
+    el.innerHTML =
+      field("作品タイトル", '<input id="f-title" value="' + esc(data.title) + '" placeholder="例) 星屑のレシピ">') +
+      '<div class="row2">' +
+        field("サークル名", '<input id="f-circleName" value="' + esc(data.circleName) + '" placeholder="例) つきよみ堂">') +
+        field("著者名(ペンネーム)", '<input id="f-authorName" value="' + esc(data.authorName) + '">') +
+      '</div>' +
+      '<div class="row3">' +
+        field("発行日", '<input id="f-pubDate" type="date" value="' + esc(data.pubDate) + '">') +
+        field("版数", '<select id="f-edition">' +
+          ["初版", "第2刷", "第3刷", "改訂版"].map(function (o) { return '<option' + (data.edition === o ? " selected" : "") + '>' + o + '</option>'; }).join("") +
+        '</select>') +
+        field("頒布イベント名(任意)", '<input id="f-eventName" value="' + esc(data.eventName) + '" placeholder="例) コミティア123">') +
+      '</div>' +
+      field("印刷所名(正式名称でご記入ください、任意)", '<input id="f-printerName" value="' + esc(data.printerName) + '">') +
+      '<div class="row2">' +
+        field("連絡先の種類", '<select id="f-contactType">' +
+          [["x", "X(Twitter)"], ["pixiv", "pixiv"], ["booth", "BOOTH"], ["web", "Webサイト"], ["email", "メールアドレス"]]
+            .map(function (o) { return '<option value="' + o[0] + '"' + (data.contactType === o[0] ? " selected" : "") + '>' + o[1] + '</option>'; }).join("") +
+        '</select>') +
+        field("連絡先(ID・URL等)", '<input id="f-contactValue" value="' + esc(data.contactValue) + '" placeholder="例) @your_id">') +
+      '</div>';
+    Array.prototype.forEach.call(el.querySelectorAll("[id^=f-]"), function (input) {
+      var key = input.id.slice(2);
+      var evt = input.tagName === "SELECT" ? "change" : "input";
+      input.addEventListener(evt, function () { data[key] = input.value; renderPreview(); });
+    });
+  }
+
+  function renderDerivativeForm() {
+    var el = document.getElementById("derivativeForm");
+    var d = data.derivative;
+    el.innerHTML =
+      field("原作名", '<input id="df-originalWorkName" value="' + esc(d.originalWorkName) + '" placeholder="例) 〇〇〇〇">') +
+      '<div class="chk-list">' +
+      DERIVATIVE_PRESETS.map(function (p) {
+        return '<label><input type="checkbox" data-preset="' + p[0] + '" ' + (d.presets[p[0]] ? "checked" : "") + '> ' + esc(p[1]) + '</label>';
+      }).join("") +
+      '</div>' +
+      field("その他の注意書き(自由記述)", '<textarea id="df-customNotice">' + esc(d.customNotice) + '</textarea>');
+    document.getElementById("df-originalWorkName").addEventListener("input", function (e) { d.originalWorkName = e.target.value; renderPreview(); });
+    document.getElementById("df-customNotice").addEventListener("input", function (e) { d.customNotice = e.target.value; renderPreview(); });
+    Array.prototype.forEach.call(el.querySelectorAll("[data-preset]"), function (cb) {
+      cb.addEventListener("change", function () { d.presets[cb.dataset.preset] = cb.checked; renderPreview(); });
+    });
+  }
+
+  function renderAiForm() {
+    var el = document.getElementById("aiForm");
+    el.innerHTML =
+      '<label style="display:flex;align-items:center;gap:8px;font-size:.9rem;margin-bottom:8px;">' +
+        '<input type="checkbox" id="ai-used" ' + (data.aiUsed ? "checked" : "") + '> 生成AIの使用を開示する' +
+      '</label>' +
+      field("開示文言", '<textarea id="ai-text">' + esc(data.aiDisclosureText) + '</textarea>');
+    document.getElementById("ai-used").addEventListener("change", function (e) { data.aiUsed = e.target.checked; renderPreview(); });
+    document.getElementById("ai-text").addEventListener("input", function (e) { data.aiDisclosureText = e.target.value; renderPreview(); });
+  }
+
+  function buildNoticeText() {
+    var lines = [];
+    if (data.genre === "derivative") {
+      if (data.derivative.originalWorkName) lines.push("本作品は「" + data.derivative.originalWorkName + "」の二次創作作品です。");
+      DERIVATIVE_PRESETS.forEach(function (p) { if (data.derivative.presets[p[0]]) lines.push(p[1]); });
+      if (data.derivative.customNotice) lines.push(data.derivative.customNotice);
+    }
+    if (data.aiUsed && data.aiDisclosureText) lines.push(data.aiDisclosureText);
+    return lines.join("\n");
+  }
+
+  function contactLabel(type) {
+    return { x: "X(Twitter)", pixiv: "pixiv", booth: "BOOTH", web: "Web", email: "Mail" }[type] || type;
+  }
+
+  function buildSheetHtml() {
+    var notice = buildNoticeText();
+    return '' +
+      '<div class="title">' + esc(data.title || "(作品タイトル未入力)") + '</div>' +
+      '<dl>' +
+        (data.circleName ? '<dt>サークル</dt><dd>' + esc(data.circleName) + '</dd>' : '') +
+        (data.authorName ? '<dt>著者</dt><dd>' + esc(data.authorName) + '</dd>' : '') +
+        '<dt>発行日</dt><dd>' + esc(data.pubDate || "-") + '　' + esc(data.edition) + '</dd>' +
+        (data.eventName ? '<dt>頒布</dt><dd>' + esc(data.eventName) + '</dd>' : '') +
+        (data.printerName ? '<dt>印刷所</dt><dd>' + esc(data.printerName) + '</dd>' : '') +
+        (data.contactValue ? '<dt>連絡先(' + esc(contactLabel(data.contactType)) + ')</dt><dd>' + esc(data.contactValue) + '</dd>' : '') +
+      '</dl>' +
+      (notice ? '<div class="notice">' + esc(notice) + '</div>' : '');
+  }
+
+  function renderPreview() {
+    var html = '<div class="out-sheet">' + buildSheetHtml() + '</div>';
+    document.getElementById("previewWrap").innerHTML = html;
+    document.getElementById("printArea").innerHTML = html;
+  }
+
+  document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+
+  var SAVE_KEY = "doujin_okuzuke_maker_v1";
+  document.getElementById("saveBtn").addEventListener("click", function () {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      document.getElementById("saveStatus").textContent = "保存しました(" + new Date().toLocaleString() + ")";
+    } catch (e) {
+      document.getElementById("saveStatus").textContent = "保存に失敗しました(ブラウザの保存容量やプライベートブラウジング設定をご確認ください)。";
+    }
+  });
+  document.getElementById("loadBtn").addEventListener("click", function () {
+    var raw;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { document.getElementById("saveStatus").textContent = "読み込みに失敗しました。"; return; }
+    if (!raw) { document.getElementById("saveStatus").textContent = "保存されたデータがありません。"; return; }
+    try {
+      var loaded = JSON.parse(raw);
+      if (loaded && typeof loaded === "object") {
+        var base = {
+          genre: "original", title: "", circleName: "", authorName: "", pubDate: "", edition: "初版",
+          printerName: "", contactType: "x", contactValue: "", eventName: "",
+          derivative: { originalWorkName: "", presets: {}, customNotice: "" },
+          aiUsed: false, aiDisclosureText: "本作品の一部制作工程において生成AIを使用しています。"
+        };
+        for (var k in base) { if (loaded[k] !== undefined) base[k] = loaded[k]; }
+        if (!base.derivative || typeof base.derivative !== "object") base.derivative = { originalWorkName: "", presets: {}, customNotice: "" };
+        if (!base.derivative.presets || typeof base.derivative.presets !== "object") base.derivative.presets = {};
+        if (base.genre !== "original" && base.genre !== "derivative") base.genre = "original";
+        data = base;
+        renderGenreTabs(); renderBasicForm(); renderDerivativeForm(); renderAiForm(); renderPreview();
+        document.getElementById("derivativeSection").style.display = data.genre === "derivative" ? "block" : "none";
+        document.getElementById("saveStatus").textContent = "読み込みました。";
+      } else {
+        document.getElementById("saveStatus").textContent = "保存データの形式が正しくないため読み込めませんでした。";
+      }
+    } catch (e) { document.getElementById("saveStatus").textContent = "読み込みに失敗しました。"; }
+  });
+
+  renderGenreTabs();
+  renderBasicForm();
+  renderDerivativeForm();
+  renderAiForm();
+  renderPreview();
+})();
+</script>
+</body>
+</html>
